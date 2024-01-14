@@ -31,7 +31,7 @@ developmentChains.includes(network.name)
                   //   console.log("done so far")
                   await new Promise(async (res, rej) => {
                       //   let startingBalance
-                      let winnerStartingBalance
+                      let winnerStartingBalance, gasUsed, gasPrice
                       lottery.once("WinnerPicked", async function () {
                           console.log("Winner Picked!")
                           try {
@@ -40,7 +40,7 @@ developmentChains.includes(network.name)
                               const raffleState =
                                   await lottery.getLotteryState()
                               const winnerEndingBalance =
-                                  await ethers.provider.getBalance(recentWinner)
+                                  await ethers.provider.getBalance(accounts[0])
                               const endingTimeStamp =
                                   await lottery.getLatestTimeStamp()
                               await expect(lottery.getPlayer(0)).to.be.reverted
@@ -50,10 +50,10 @@ developmentChains.includes(network.name)
                               )
                               assert.equal(raffleState, 0)
                               assert.equal(
-                                  Number(winnerEndingBalance).toString(),
+                                  BigInt(winnerEndingBalance).toString(),
                                   (
-                                      Number(winnerStartingBalance) +
-                                      Number(lotteryEntranceFee)
+                                      BigInt(winnerStartingBalance) +
+                                      BigInt(lotteryEntranceFee)
                                   ).toString(),
                               )
                               assert(endingTimeStamp > startingTimeStamp)
@@ -69,9 +69,12 @@ developmentChains.includes(network.name)
                           const tx = await lottery.enterLottery({
                               value: lotteryEntranceFee,
                           })
+                          let rec = await tx.wait(1)
+                          console.log(rec)
+                          //   let { gasPrice, gasUsed } = rec
+
+                          //   console.log(tx)
                           //   tx.wait(1)
-                          //   console.log("Entered")
-                          tx.wait(1)
                           winnerStartingBalance =
                               await ethers.provider.getBalance(deployer)
                           console.log(
